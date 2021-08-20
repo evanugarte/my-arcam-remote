@@ -6,5 +6,5 @@ fi
 
 # TODO change dependency install steps for arcam_fmj
 cd arcam_fmj
-python3 -m pip install Flask flask[async] asyncio aiohttp attrs defusedxml --user
+python3 setup.py install
 cd ..
