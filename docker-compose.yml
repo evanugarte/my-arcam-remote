@@ -1,0 +1,21 @@
+version: '2'
+services:
+  arcam-remote-website:
+    container_name: arcam-remote-website
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - HOST_IP=192.168.1.76
+    ports:
+      - '80:5000'
+    restart: 'on-failure'
+    networks:
+      - arcam-remote-local
+networks:
+  arcam-remote-local:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.32.0.0/24
+          gateway: 172.32.0.254

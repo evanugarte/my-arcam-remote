@@ -1,0 +1,5 @@
+Flask==2.0.1
+asyncio==3.4.3
+attrs==21.2.0
+aiohttp==3.7.4.post0
+defusedxml==0.7.1
