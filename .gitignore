@@ -1,3 +1,5 @@
 **/__pycache__/**
 **/node_modules/**
 **/arcam_fmj/**
+**/build/**
+**/.vscode/**
