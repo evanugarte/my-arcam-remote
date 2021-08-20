@@ -19,27 +19,27 @@ ZONE = os.getenv('ZONE') or 1
 
 def source_to_str(source: bytes) -> str or None:
     return {
-        0x01: "PHONO",
-        0x02: "AUX",
-        0x03: "PVR",
-        0x04: "AV",
-        0x05: "STB",
-        0x06: "CD",
-        0x07: "BD",
-        0x08: "SAT"
+        SA10SourceCodes.PHONO: "PHONO",
+        SA10SourceCodes.AUX: "AUX",
+        SA10SourceCodes.PVR: "PVR",
+        SA10SourceCodes.AV: "AV",
+        SA10SourceCodes.STB: "STB",
+        SA10SourceCodes.CD: "CD",
+        SA10SourceCodes.BD: "BD",
+        SA10SourceCodes.SAT: "SAT"
     }[source]
 
 
 def str_to_source(source: str) -> bytes or None:
     return {
-        "PHONO": 0x01,
-        "AUX": 0x02,
-        "PVR": 0x03,
-        "AV": 0x04,
-        "STB": 0x05,
-        "CD": 0x06,
-        "BD": 0x07,
-        "SAT": 0x08
+        "PHONO": SA10SourceCodes.PHONO,
+        "AUX": SA10SourceCodes.AUX,
+        "PVR": SA10SourceCodes.PVR,
+        "AV": SA10SourceCodes.AV,
+        "STB": SA10SourceCodes.STB,
+        "CD": SA10SourceCodes.CD,
+        "BD": SA10SourceCodes.BD,
+        "SAT": SA10SourceCodes.SAT
     }[source]
 
 
@@ -71,8 +71,6 @@ async def health_check():
         return jsonify({
             "success": False,
         })
-
-# Active high, assume 1 means on 0 means off
 
 
 @app.route("/api/mute", methods=["POST"])
