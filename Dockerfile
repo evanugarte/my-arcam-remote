@@ -1,4 +1,4 @@
-FROM node:alpine as builder
+FROM arm32v7/node:16-alpine3.11 as builder
 
 WORKDIR /frontend
 
@@ -14,7 +14,7 @@ COPY website/rollup.config.js .
 
 RUN npm run build --production
 
-FROM python:3.8.4-slim-buster
+FROM arm32v7/python:3.9.6-slim-buster
 
 WORKDIR /app
 
@@ -29,6 +29,10 @@ COPY requirements.txt .
 COPY server.py .
 
 COPY setup.sh .
+
+ENV MULTIDICT_NO_EXTENSIONS=1
+
+ENV YARL_NO_EXTENSIONS=1
 
 RUN python3 -m pip install -r requirements.txt
 
