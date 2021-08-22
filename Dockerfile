@@ -26,8 +26,6 @@ COPY --from=builder /frontend/public/ /app/website/public
 
 COPY requirements.txt .
 
-COPY server.py .
-
 COPY setup.sh .
 
 ENV MULTIDICT_NO_EXTENSIONS=1
@@ -39,6 +37,8 @@ RUN python3 -m pip install -r requirements.txt
 RUN python3 -m pip install "Flask[async]"
 
 RUN ["/bin/bash", "./setup.sh"]
+
+COPY server.py .
 
 EXPOSE 5000
 
