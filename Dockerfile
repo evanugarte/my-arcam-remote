@@ -42,4 +42,4 @@ COPY server.py .
 
 EXPOSE 5000
 
-CMD ["python3", "server.py"]
+CMD ["python3", "-u", "server.py"]
