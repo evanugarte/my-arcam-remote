@@ -67,9 +67,9 @@ async def health_check():
                 )
             await client.stop()
             return jsonify({
-                "power": power,
-                "mute": mute,
-                "volume": volume,
+                "power": power[0],
+                "mute": mute[0],
+                "volume": volume[0],
                 "source": source
             })
     except Exception:
