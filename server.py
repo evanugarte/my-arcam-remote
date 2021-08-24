@@ -59,13 +59,18 @@ async def health_check():
     try:
         async with ClientContext(client):
             state = State(client, ZONE)
-            return jsonify({
-                "power": await state.get_power(use_state=False),
-                "mute": await state.get_mute(use_state=False),
-                "volume": await state.get_volume(use_state=False),
-                "source": source_to_str(
+            power = await state.get_power(use_state=False),
+            mute = await state.get_mute(use_state=False),
+            volume = await state.get_volume(use_state=False),
+            source = source_to_str(
                     await state.get_source(use_state=False)
                 )
+            await client.stop()
+            return jsonify({
+                "power": power[0],
+                "mute": mute[0],
+                "volume": volume[0],
+                "source": source
             })
     except Exception:
         return jsonify({
@@ -82,6 +87,7 @@ async def mute():
         async with ClientContext(client):
             state = State(client, ZONE)
             await state.set_mute(value_to_bool, use_rc5=False)
+            await client.stop()
     except Exception:
         success = False
     finally:
@@ -99,6 +105,7 @@ async def power():
         async with ClientContext(client):
             state = State(client, ZONE)
             await state.set_power(value_to_bool, use_rc5=False)
+            await client.stop()
     except Exception:
         success = False
     finally:
@@ -116,6 +123,7 @@ async def volume():
         async with ClientContext(client):
             state = State(client, ZONE)
             await state.set_volume(value_to_int)
+            await client.stop()
     except Exception:
         success = False
     finally:
@@ -133,6 +141,7 @@ async def source():
         async with ClientContext(client):
             state = State(client, ZONE)
             await state.set_source(str_to_source(value), use_rc5=False)
+            await client.stop()
     except Exception:
         success = False
     finally:
