@@ -90,11 +90,6 @@ div.menu-grid>div>i {
   margin-bottom: 5px;
 }
 
-div.menu-grid>div>i.active {
-  /* TODO MAKE THIS COLOR A FUNCTION IN APP */
-  color: #d51600;
-}
-
 div.rounded-bg {
   background: #d9d9d9;
   border-radius: 50px;
