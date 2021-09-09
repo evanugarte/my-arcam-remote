@@ -34,8 +34,9 @@
   }
 
   async function handlePower() {
-    data.power = ~~!data.power;
-    await fetch(`./api/power?value=${data.power}`, {method: 'POST'});
+    const numericalInverse = ~~!data.power
+    data.power = !data.power;
+    await fetch(`./api/power?value=${numericalInverse}`, {method: 'POST'});
   }
 
   async function handleSource(source) {
@@ -60,7 +61,7 @@
     <div class="d-flex flex-row justify-content-center">
         <div class="menu-grid">
             <div class="d-flex flex-column align-items-center" on:click={handlePower}>
-                <i class="fas fa-power-off active"></i>
+                <i class="fas fa-power-off active" style="color: {data.power === false ? 'green' : 'red'};"></i>
                 <span class="label">Power</span>
             </div>
             <div id="source" on:click={() => (isOpen = true)} class="d-flex flex-column align-items-center">
