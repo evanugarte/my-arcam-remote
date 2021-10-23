@@ -22,7 +22,7 @@
 
   async function handleVolume(modifier) {
     const newVolume = data.volume + modifier;
-    if (newVolume >= 0 && newVolume <= 60) {
+    if (newVolume >= 0 && newVolume <= 99) {
       await fetch(`./api/volume?value=${newVolume}`, {method: 'POST'});
       data.volume = newVolume;
     }
