@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: ./Dockerfile
     environment:
-      - HOST_IP=192.168.1.76
+      - HOST_IP=192.168.1.4
     ports:
       - '80:5000'
     restart: 'on-failure'
@@ -17,5 +17,5 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.32.0.0/24
-          gateway: 172.32.0.254
+        - subnet: 172.68.0.0/24
+          gateway: 172.68.0.254

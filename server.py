@@ -120,6 +120,8 @@ async def volume():
     success = True
     client = Client(HOST_IP, HOST_PORT)
     try:
+        if value_to_int < 0 or value_to_int > 99:
+            raise ValueError("Volume out of range")
         async with ClientContext(client):
             state = State(client, ZONE)
             await state.set_volume(value_to_int)
