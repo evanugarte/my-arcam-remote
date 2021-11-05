@@ -15,9 +15,13 @@
     "SAT"
   ];
 
-  onMount(async () => {
+  async function healthCheck() {
     const res = await fetch(`./api/health-check`);
     data = await res.json();
+  }
+
+  onMount(async () => {
+    await healthCheck();
   });
 
   async function handleVolume(modifier) {
@@ -43,6 +47,19 @@
     await fetch(`./api/source?value=${source}`, {method: 'POST'});
     data = {...data, source};
   }
+
+  let tabInactive;
+
+  window.onfocus = async function () { 
+    if (tabInactive) {
+      tabInactive = false;
+      await healthCheck();
+    }
+  }; 
+
+  window.onblur = function () { 
+    tabInactive = true; 
+  }; 
 
   $: activeSource = data.source;
 </script>
