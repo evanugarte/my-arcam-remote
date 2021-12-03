@@ -24,9 +24,9 @@ RUN yes | apt-get install curl git
 
 COPY --from=builder /frontend/public/ /app/website/public
 
-COPY requirements.txt .
+COPY server/requirements.txt .
 
-COPY setup.sh .
+COPY server/setup.sh .
 
 ENV MULTIDICT_NO_EXTENSIONS=1
 
@@ -38,7 +38,7 @@ RUN python3 -m pip install "Flask[async]"
 
 RUN ["/bin/bash", "./setup.sh"]
 
-COPY server.py .
+COPY server/server.py .
 
 EXPOSE 5000
 
