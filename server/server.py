@@ -1,8 +1,11 @@
 # TODO return 503 if something doesn't update
 from flask import Flask
 from flask import request
+from flask import Response
 from flask import jsonify
 from flask import send_from_directory
+import json
+import queue
 import os
 
 from arcam_fmj.src.arcam.fmj import SA10SourceCodes
@@ -41,6 +44,37 @@ def str_to_source(source: str) -> bytes or None:
         "BD": SA10SourceCodes.BD,
         "SAT": SA10SourceCodes.SAT
     }[source]
+
+class MessageAnnouncer:
+
+    def __init__(self):
+        self.listeners = []
+
+    def listen(self):
+        q = queue.Queue(maxsize=5)
+        self.listeners.append(q)
+        self.listeners[-1].put_nowait(f'data=You have successfully connected.\n\n')
+        return q
+
+    def announce(self, msg):
+        for i in reversed(range(len(self.listeners))):
+            try:
+                self.listeners[i].put_nowait(msg)
+            except queue.Full:
+                del self.listeners[i]
+
+announcer = MessageAnnouncer()
+
+def format_sse(field, value, event=None):
+    msg = f'data: {json.dumps({field: value})}\n\n'
+    if event is not None:
+        msg = f'event: {event}\n{msg}'
+    return msg
+
+def push_message(field, value):
+    msg = format_sse(field, value)
+    print("pushing", msg, flush=True)
+    announcer.announce(msg)
 
 
 @app.route("/", methods=["GET"])
@@ -88,6 +122,7 @@ async def mute():
             state = State(client, ZONE)
             await state.set_mute(value_to_bool, use_rc5=False)
             await client.stop()
+            push_message("mute", value_to_bool)
     except Exception:
         success = False
     finally:
@@ -106,6 +141,7 @@ async def power():
             state = State(client, ZONE)
             await state.set_power(value_to_bool, use_rc5=False)
             await client.stop()
+            push_message("power", value_to_bool)
     except Exception:
         success = False
     finally:
@@ -126,6 +162,7 @@ async def volume():
             state = State(client, ZONE)
             await state.set_volume(value_to_int)
             await client.stop()
+            push_message("volume", value_to_int)
     except Exception:
         success = False
     finally:
@@ -144,6 +181,7 @@ async def source():
             state = State(client, ZONE)
             await state.set_source(str_to_source(value), use_rc5=False)
             await client.stop()
+            push_message("source", value)
     except Exception:
         success = False
     finally:
@@ -151,5 +189,14 @@ async def source():
             "success": success
         })
 
+@app.route('/api/listen', methods=['GET'])
+def listen():
+    def stream():
+        messages = announcer.listen()
+        while True:
+            msg = messages.get()
+            yield msg
+    return Response(stream(), mimetype='text/event-stream')
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', threaded=False, processes=10)
+    app.run(host='0.0.0.0')
