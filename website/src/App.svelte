@@ -28,24 +28,21 @@
     const newVolume = data.volume + modifier;
     if (newVolume >= 0 && newVolume <= 99) {
       await fetch(`./api/volume?value=${newVolume}`, {method: 'POST'});
-      data.volume = newVolume;
     }
   }
 
   async function handleMute() {
-    data.mute = ~~!data.mute;
-    await fetch(`./api/mute?value=${data.mute}`, {method: 'POST'});
+    const numericalInverse = ~~!data.mute
+    await fetch(`./api/mute?value=${numericalInverse}`, {method: 'POST'});
   }
 
   async function handlePower() {
     const numericalInverse = ~~!data.power
-    data.power = !data.power;
     await fetch(`./api/power?value=${numericalInverse}`, {method: 'POST'});
   }
 
   async function handleSource(source) {
     await fetch(`./api/source?value=${source}`, {method: 'POST'});
-    data = {...data, source};
   }
 
   let tabInactive;
@@ -62,6 +59,20 @@
   }; 
 
   $: activeSource = data.source;
+
+  let eventSource = new EventSource(
+        "./api/listen",
+    );
+    eventSource.onopen = () => {}
+    eventSource.onmessage = (msg) => {
+      try {
+        const { data: serverMessage } = msg;        
+        const parsedMessage = JSON.parse(serverMessage);
+        data = {...data, ...parsedMessage};
+      } catch (error) {
+        console.error("unable to update amplifier:", e);
+      }
+    }
 </script>
 
 <style>
