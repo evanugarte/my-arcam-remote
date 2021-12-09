@@ -73,7 +73,6 @@ def format_sse(field, value, event=None):
 
 def push_message(field, value):
     msg = format_sse(field, value)
-    print("pushing", msg, flush=True)
     announcer.announce(msg)
 
 
