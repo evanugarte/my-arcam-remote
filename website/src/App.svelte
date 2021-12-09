@@ -24,31 +24,14 @@
     await healthCheck();
   });
 
-  async function handleVolume(modifier) {
-    const newVolume = data.volume + modifier;
-    if (newVolume >= 0 && newVolume <= 99) {
-      await fetch(`./api/volume?value=${newVolume}`, {method: 'POST'});
-    }
-  }
-
-  async function handleMute() {
-    const numericalInverse = ~~!data.mute
-    await fetch(`./api/mute?value=${numericalInverse}`, {method: 'POST'});
-  }
-
-  async function handlePower() {
-    const numericalInverse = ~~!data.power
-    await fetch(`./api/power?value=${numericalInverse}`, {method: 'POST'});
-  }
-
-  async function handleSource(source) {
-    await fetch(`./api/source?value=${source}`, {method: 'POST'});
+  async function sendRequestToArcam(endpoint, value) {
+    await fetch(`./api/${endpoint}?value=${value}`, {method: 'POST'});
   }
 
   let tabInactive;
 
   window.onfocus = async function () { 
-    if (tabInactive) {
+    if (tabInactive) {``
       tabInactive = false;
       await healthCheck();
     }
@@ -88,7 +71,7 @@
 
     <div class="d-flex flex-row justify-content-center">
         <div class="menu-grid">
-            <div class="d-flex flex-column align-items-center" on:click={handlePower}>
+            <div class="d-flex flex-column align-items-center" on:click={() => sendRequestToArcam('power', ~~!data.power)}>
                 <i class="fas fa-power-off active" style="color: {data.power === false ? 'green' : 'red'};"></i>
                 <span class="label">Power</span>
             </div>
@@ -100,16 +83,27 @@
     </div>
 
     <div class="d-flex flex-row mt-4 justify-content-center px-2">
-        <div class="flex-column align-items-center mt-2 px-4 mute" on:click={handleMute}>
+        <div
+          class="flex-column align-items-center mt-2 px-4 mute"
+          on:click={() => sendRequestToArcam('mute', ~~!data.mute)}
+          >
             <div class="grey-bg justify-content-center align-self-baseline">
                 <i class="fas {data.mute ? "fa-volume-up" : "fa-volume-mute"} p-3 control-icon "></i>
             </div>
             <span class="label">{data.mute ? "Unmute" : "Mute"}</span>
         </div>
         <div class="d-flex flex-column rounded-bg py-3 px-4 justify-content-center align-items-center volume">
-            <i class="fas fa-plus py-3 control-icon" on:click={() => handleVolume(1)}></i>
+            <i
+              class="fas fa-plus py-3 control-icon"
+              on:click={() => sendRequestToArcam('volume', data.volume + 1)}
+            >
+            </i>
             <span class="label py-3">Volume {data.volume ? data.volume : ''}</span>
-            <i class="fas fa-minus py-3 control-icon" on:click={() => handleVolume(-1)}></i>
+            <i
+              class="fas fa-minus py-3 control-icon"
+              on:click={() => sendRequestToArcam('volume', data.volume - 1)}
+            >
+            </i>
         </div>
     </div>
   </div>
@@ -122,7 +116,7 @@
               <button
                 type="button"
                 class="btn btn-outline-secondary source-btn {activeSource === source ? 'active' : ''}"
-                on:click={() => handleSource(source)}
+                on:click={() => sendRequestToArcam('source', source)}
               >
                 {source}
               </button>
