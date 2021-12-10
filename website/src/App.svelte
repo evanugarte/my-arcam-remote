@@ -98,7 +98,9 @@
               on:click={() => sendRequestToArcam('volume', data.volume + 1)}
             >
             </i>
-            <span class="label py-3">Volume {data.volume ? data.volume : ''}</span>
+            <span class="label py-3">
+              Volume {typeof data.volume === 'number' ? data.volume : ''}
+            </span>
             <i
               class="fas fa-minus py-3 control-icon"
               on:click={() => sendRequestToArcam('volume', data.volume - 1)}
