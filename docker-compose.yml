@@ -10,6 +10,56 @@ services:
     restart: 'on-failure'
     networks:
       - arcam-remote-local
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      - cadvisor
+    networks:
+      - arcam-remote-local
+
+  cadvisor:
+    image: braingamer/cadvisor-arm:latest
+    # for running on x86:
+    # image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    networks:
+      - arcam-remote-local
+    depends_on:
+      - arcam-remote-website
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana:/var/lib/grafana
+    user: "1000"
+    depends_on:
+      - prometheus
+    networks:
+      - arcam-remote-local
   nginx:
     image: 'nginx'
     volumes:
@@ -30,3 +80,7 @@ networks:
       config:
         - subnet: 172.68.0.0/24
           gateway: 172.68.0.254
+
+volumes:
+  grafana:
+  prometheus:

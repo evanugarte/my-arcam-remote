@@ -1,9 +1,4 @@
 # TODO return 503 if something doesn't update
-from flask import Flask
-from flask import request
-from flask import Response
-from flask import jsonify
-from flask import send_from_directory
 import json
 import queue
 import os
@@ -12,6 +7,13 @@ from arcam_fmj.src.arcam.fmj import SA10SourceCodes
 from arcam_fmj.src.arcam.fmj.client import Client
 from arcam_fmj.src.arcam.fmj.client import ClientContext
 from arcam_fmj.src.arcam.fmj.state import State
+from flask import Flask
+from flask import request
+from flask import Response
+from flask import jsonify
+from flask import send_from_directory
+from prometheus_client import start_http_server
+
 
 app = Flask(__name__)
 
@@ -198,4 +200,5 @@ def listen():
     return Response(stream(), mimetype='text/event-stream')
 
 if __name__ == '__main__':
+    start_http_server(50052)
     app.run(host='0.0.0.0')
