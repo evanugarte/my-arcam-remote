@@ -7,9 +7,6 @@ services:
       dockerfile: ./Dockerfile
     environment:
       - HOST_IP=192.168.1.4
-    # ports:
-    #   - '80:5000'
-      # - '50052:50052'
     restart: 'on-failure'
     networks:
       - arcam-remote-local
@@ -23,18 +20,16 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-    # ports:
-    #   - 9090:9090
     depends_on:
       - cadvisor
     networks:
       - arcam-remote-local
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
+    image: braingamer/cadvisor-arm:latest
+    # for running on x86:
+    # image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
-    # ports:
-    #   - 8081:8080
     restart: always
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -60,11 +55,6 @@ services:
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini
       - ./grafana/provisioning:/etc/grafana/provisioning
       - grafana:/var/lib/grafana
-    # ports:
-    #   - 3000:3000
-    # environment:
-    #   GF_SERVER_DOMAIN: "{{ gf_server_domain }}"
-    #   GF_SERVER_ROOT_URL: "{{ gf_server_root_url }}"
     user: "1000"
     depends_on:
       - prometheus
@@ -77,7 +67,6 @@ services:
     command: [nginx-debug, '-g', 'daemon off;']
     ports:
       - '80:80'
-      # - '443:443'
     restart: 'on-failure'
     depends_on:
       - arcam-remote-website
@@ -94,5 +83,4 @@ networks:
 
 volumes:
   grafana:
-  loki:
   prometheus:
