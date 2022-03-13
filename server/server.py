@@ -3,16 +3,15 @@ import json
 import queue
 import os
 
-from arcam_fmj.src.arcam.fmj import SA10SourceCodes
-from arcam_fmj.src.arcam.fmj.client import Client
-from arcam_fmj.src.arcam.fmj.client import ClientContext
-from arcam_fmj.src.arcam.fmj.state import State
 from flask import Flask
 from flask import request
 from flask import Response
 from flask import jsonify
 from flask import send_from_directory
 from prometheus_client import start_http_server
+from prometheus_client import Histogram
+
+from arcam_state_handler import ArcamStateHandler
 
 
 app = Flask(__name__)
@@ -21,31 +20,10 @@ HOST_IP = os.getenv('HOST_IP')
 HOST_PORT = os.getenv('HOST_PORT') or 50000
 ZONE = os.getenv('ZONE') or 1
 
-
-def source_to_str(source: bytes) -> str or None:
-    return {
-        SA10SourceCodes.PHONO: "PHONO",
-        SA10SourceCodes.AUX: "AUX",
-        SA10SourceCodes.PVR: "PVR",
-        SA10SourceCodes.AV: "AV",
-        SA10SourceCodes.STB: "STB",
-        SA10SourceCodes.CD: "CD",
-        SA10SourceCodes.BD: "BD",
-        SA10SourceCodes.SAT: "SAT"
-    }[source]
-
-
-def str_to_source(source: str) -> bytes or None:
-    return {
-        "PHONO": SA10SourceCodes.PHONO,
-        "AUX": SA10SourceCodes.AUX,
-        "PVR": SA10SourceCodes.PVR,
-        "AV": SA10SourceCodes.AV,
-        "STB": SA10SourceCodes.STB,
-        "CD": SA10SourceCodes.CD,
-        "BD": SA10SourceCodes.BD,
-        "SAT": SA10SourceCodes.SAT
-    }[source]
+# rate(request_latency_seconds_sum[1m]) / rate(request_latency_seconds_count[1m])
+health_check_latency_seconds = Histogram(
+    'health_check_latency_seconds', 'Time spent processing health check'
+)
 
 class MessageAnnouncer:
 
@@ -90,105 +68,50 @@ def home(path):
 
 @app.route("/api/health-check", methods=["GET"])
 async def health_check():
-    client = Client(HOST_IP, HOST_PORT)
-    try:
-        async with ClientContext(client):
-            state = State(client, ZONE)
-            power = await state.get_power(use_state=False),
-            mute = await state.get_mute(use_state=False),
-            volume = await state.get_volume(use_state=False),
-            source = source_to_str(
-                    await state.get_source(use_state=False)
-                )
-            await client.stop()
-            return jsonify({
-                "power": power[0],
-                "mute": mute[0],
-                "volume": volume[0],
-                "source": source
-            })
-    except Exception:
-        return jsonify({
-            "success": False,
-        })
+    a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
+    return jsonify(await a.health_check())
 
 
 @app.route("/api/mute", methods=["POST"])
 async def mute():
     value_to_bool = bool(int(request.args.get("value")))
-    success = True
-    client = Client(HOST_IP, HOST_PORT)
-    try:
-        async with ClientContext(client):
-            state = State(client, ZONE)
-            await state.set_mute(value_to_bool, use_rc5=False)
-            await client.stop()
-            push_message("mute", value_to_bool)
-    except Exception:
-        success = False
-    finally:
-        return jsonify({
-            "success": success
-        })
+    a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
+    mute_result = await a.handle_mute(value_to_bool)
+    if mute_result.get("success"):
+        push_message("mute", value_to_bool)
+    return jsonify(mute_result)
 
 
 @app.route("/api/power", methods=["POST"])
 async def power():
     value_to_bool = bool(int(request.args.get("value")))
-    success = True
-    client = Client(HOST_IP, HOST_PORT)
-    try:
-        async with ClientContext(client):
-            state = State(client, ZONE)
-            await state.set_power(value_to_bool, use_rc5=False)
-            await client.stop()
-            push_message("power", value_to_bool)
-    except Exception:
-        success = False
-    finally:
-        return jsonify({
-            "success": success
-        })
+    a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
+    power_result = await a.handle_power(value_to_bool)
+    if power_result.get("success"):
+        push_message("power", value_to_bool)
+    return jsonify(power_result)
 
 
 @app.route("/api/volume", methods=["POST"])
 async def volume():
     value_to_int = int(request.args.get("value"))
-    success = True
-    client = Client(HOST_IP, HOST_PORT)
-    try:
-        if value_to_int < 0 or value_to_int > 99:
-            raise ValueError("Volume out of range")
-        async with ClientContext(client):
-            state = State(client, ZONE)
-            await state.set_volume(value_to_int)
-            await client.stop()
-            push_message("volume", value_to_int)
-    except Exception:
-        success = False
-    finally:
-        return jsonify({
-            "success": success
-        })
+    if value_to_int < 0 or value_to_int > 99:
+        raise ValueError("Volume out of range")
+    a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
+    volume_result = await a.handle_volume(value_to_int)
+    if volume_result.get("success"):
+        push_message("volume", value_to_int)
+    return jsonify(volume_result)
 
 
 @app.route("/api/source", methods=["POST"])
 async def source():
     value = request.args.get('value')
-    success = True
-    client = Client(HOST_IP, HOST_PORT)
-    try:
-        async with ClientContext(client):
-            state = State(client, ZONE)
-            await state.set_source(str_to_source(value), use_rc5=False)
-            await client.stop()
-            push_message("source", value)
-    except Exception:
-        success = False
-    finally:
-        return jsonify({
-            "success": success
-        })
+    a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
+    source_result = await a.handle_source(value)
+    if source_result.get("success"):
+        push_message("source", value)
+    return jsonify(source_result)
 
 @app.route('/api/listen', methods=['GET'])
 def listen():
