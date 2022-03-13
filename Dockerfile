@@ -40,6 +40,8 @@ RUN ["/bin/bash", "./setup.sh"]
 
 COPY server/server.py .
 
+COPY server/arcam_state_handler.py .
+
 EXPOSE 5000
 
 CMD ["python3", "server.py"]
