@@ -38,9 +38,7 @@ RUN python3 -m pip install "Flask[async]"
 
 RUN ["/bin/bash", "./setup.sh"]
 
-COPY server/server.py .
-
-COPY server/arcam_state_handler.py .
+COPY server/*.py .
 
 EXPOSE 5000
 

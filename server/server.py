@@ -1,6 +1,3 @@
-# TODO return 503 if something doesn't update
-import json
-import queue
 import os
 
 from flask import Flask
@@ -12,6 +9,7 @@ from prometheus_client import start_http_server
 from prometheus_client import Histogram
 
 from arcam_state_handler import ArcamStateHandler
+from message_announcer import MessageAnnouncer
 
 
 app = Flask(__name__)
@@ -25,35 +23,7 @@ health_check_latency_seconds = Histogram(
     'health_check_latency_seconds', 'Time spent processing health check'
 )
 
-class MessageAnnouncer:
-
-    def __init__(self):
-        self.listeners = []
-
-    def listen(self):
-        q = queue.Queue(maxsize=5)
-        self.listeners.append(q)
-        self.listeners[-1].put_nowait(f'data=You have successfully connected.\n\n')
-        return q
-
-    def announce(self, msg):
-        for i in reversed(range(len(self.listeners))):
-            try:
-                self.listeners[i].put_nowait(msg)
-            except queue.Full:
-                del self.listeners[i]
-
 announcer = MessageAnnouncer()
-
-def format_sse(field, value, event=None):
-    msg = f'data: {json.dumps({field: value})}\n\n'
-    if event is not None:
-        msg = f'event: {event}\n{msg}'
-    return msg
-
-def push_message(field, value):
-    msg = format_sse(field, value)
-    announcer.announce(msg)
 
 
 @app.route("/", methods=["GET"])
@@ -78,7 +48,7 @@ async def mute():
     a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
     mute_result = await a.handle_mute(value_to_bool)
     if mute_result.get("success"):
-        push_message("mute", value_to_bool)
+        announcer.push_message("mute", value_to_bool)
     return jsonify(mute_result)
 
 
@@ -88,7 +58,7 @@ async def power():
     a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
     power_result = await a.handle_power(value_to_bool)
     if power_result.get("success"):
-        push_message("power", value_to_bool)
+        announcer.push_message("power", value_to_bool)
     return jsonify(power_result)
 
 
@@ -100,7 +70,7 @@ async def volume():
     a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
     volume_result = await a.handle_volume(value_to_int)
     if volume_result.get("success"):
-        push_message("volume", value_to_int)
+        announcer.push_message("volume", value_to_int)
     return jsonify(volume_result)
 
 
@@ -110,7 +80,7 @@ async def source():
     a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
     source_result = await a.handle_source(value)
     if source_result.get("success"):
-        push_message("source", value)
+        announcer.push_message("source", value)
     return jsonify(source_result)
 
 @app.route('/api/listen', methods=['GET'])
