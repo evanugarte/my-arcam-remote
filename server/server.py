@@ -18,13 +18,9 @@ HOST_IP = os.getenv('HOST_IP')
 HOST_PORT = os.getenv('HOST_PORT') or 50000
 ZONE = os.getenv('ZONE') or 1
 
-# rate(request_latency_seconds_sum[1m]) / rate(request_latency_seconds_count[1m])
-health_check_latency_seconds = Histogram(
-    'health_check_latency_seconds', 'Time spent processing health check'
-)
-
 announcer = MessageAnnouncer()
 
+state_handler = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
 
 @app.route("/", methods=["GET"])
 async def base():
@@ -38,15 +34,13 @@ def home(path):
 
 @app.route("/api/health-check", methods=["GET"])
 async def health_check():
-    a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
-    return jsonify(await a.health_check())
+    return jsonify(await state_handler.health_check())
 
 
 @app.route("/api/mute", methods=["POST"])
 async def mute():
     value_to_bool = bool(int(request.args.get("value")))
-    a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
-    mute_result = await a.handle_mute(value_to_bool)
+    mute_result = await state_handler.handle_mute(value_to_bool)
     if mute_result.get("success"):
         announcer.push_message("mute", value_to_bool)
     return jsonify(mute_result)
@@ -55,8 +49,7 @@ async def mute():
 @app.route("/api/power", methods=["POST"])
 async def power():
     value_to_bool = bool(int(request.args.get("value")))
-    a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
-    power_result = await a.handle_power(value_to_bool)
+    power_result = await state_handler.handle_power(value_to_bool)
     if power_result.get("success"):
         announcer.push_message("power", value_to_bool)
     return jsonify(power_result)
@@ -67,8 +60,7 @@ async def volume():
     value_to_int = int(request.args.get("value"))
     if value_to_int < 0 or value_to_int > 99:
         raise ValueError("Volume out of range")
-    a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
-    volume_result = await a.handle_volume(value_to_int)
+    volume_result = await state_handler.handle_volume(value_to_int)
     if volume_result.get("success"):
         announcer.push_message("volume", value_to_int)
     return jsonify(volume_result)
@@ -77,8 +69,7 @@ async def volume():
 @app.route("/api/source", methods=["POST"])
 async def source():
     value = request.args.get('value')
-    a = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
-    source_result = await a.handle_source(value)
+    source_result = await state_handler.handle_source(value)
     if source_result.get("success"):
         announcer.push_message("source", value)
     return jsonify(source_result)
