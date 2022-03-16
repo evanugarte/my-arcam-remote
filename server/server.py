@@ -9,6 +9,7 @@ from prometheus_client import start_http_server
 from prometheus_client import Histogram
 
 from arcam_state_handler import ArcamStateHandler
+from arcam_metrics_handler import ArcamMetricsHandler
 from message_announcer import MessageAnnouncer
 
 
@@ -21,6 +22,8 @@ ZONE = os.getenv('ZONE') or 1
 announcer = MessageAnnouncer()
 
 state_handler = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
+metrics_handler = ArcamMetricsHandler()
+metrics_handler.initialize()
 
 @app.route("/", methods=["GET"])
 async def base():
@@ -34,7 +37,8 @@ def home(path):
 
 @app.route("/api/health-check", methods=["GET"])
 async def health_check():
-    return jsonify(await state_handler.health_check())
+    with metrics_handler.health_check_latency_seconds.time():
+        return jsonify(await state_handler.health_check())
 
 
 @app.route("/api/mute", methods=["POST"])
@@ -42,6 +46,7 @@ async def mute():
     value_to_bool = bool(int(request.args.get("value")))
     mute_result = await state_handler.handle_mute(value_to_bool)
     if mute_result.get("success"):
+        metrics_handler.mute_state.set(int(value_to_bool))
         announcer.push_message("mute", value_to_bool)
     return jsonify(mute_result)
 
@@ -51,6 +56,7 @@ async def power():
     value_to_bool = bool(int(request.args.get("value")))
     power_result = await state_handler.handle_power(value_to_bool)
     if power_result.get("success"):
+        metrics_handler.power_state.set(int(value_to_bool))
         announcer.push_message("power", value_to_bool)
     return jsonify(power_result)
 
@@ -62,6 +68,7 @@ async def volume():
         raise ValueError("Volume out of range")
     volume_result = await state_handler.handle_volume(value_to_int)
     if volume_result.get("success"):
+        metrics_handler.volume_state.set(value_to_int)
         announcer.push_message("volume", value_to_int)
     return jsonify(volume_result)
 

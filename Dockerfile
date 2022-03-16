@@ -38,7 +38,7 @@ RUN python3 -m pip install "Flask[async]"
 
 RUN ["/bin/bash", "./setup.sh"]
 
-COPY server/*.py .
+COPY server/*.py ./
 
 EXPOSE 5000
 
