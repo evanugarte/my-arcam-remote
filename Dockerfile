@@ -1,4 +1,4 @@
-FROM arm32v7/node:16-alpine3.11 as builder
+FROM node:16-alpine3.11 as builder
 
 WORKDIR /frontend
 
@@ -14,7 +14,7 @@ COPY website/rollup.config.js .
 
 RUN npm run build --production
 
-FROM arm32v7/python:3.9.6-slim-buster
+FROM python:3.9.6-slim-buster
 
 WORKDIR /app
 
