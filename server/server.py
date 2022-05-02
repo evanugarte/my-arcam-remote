@@ -44,7 +44,8 @@ async def health_check():
 @app.route("/api/mute", methods=["POST"])
 async def mute():
     value_to_bool = bool(int(request.args.get("value")))
-    mute_result = await state_handler.handle_mute(value_to_bool)
+    with metrics_handler.network_latency_seconds.time():
+        mute_result = await state_handler.handle_mute(value_to_bool)
     if mute_result.get("success"):
         metrics_handler.mute_state.set(int(value_to_bool))
         announcer.push_message("mute", value_to_bool)
@@ -54,7 +55,8 @@ async def mute():
 @app.route("/api/power", methods=["POST"])
 async def power():
     value_to_bool = bool(int(request.args.get("value")))
-    power_result = await state_handler.handle_power(value_to_bool)
+    with metrics_handler.network_latency_seconds.time():
+        power_result = await state_handler.handle_power(value_to_bool)
     if power_result.get("success"):
         metrics_handler.power_state.set(int(value_to_bool))
         announcer.push_message("power", value_to_bool)
@@ -66,7 +68,8 @@ async def volume():
     value_to_int = int(request.args.get("value"))
     if value_to_int < 0 or value_to_int > 99:
         raise ValueError("Volume out of range")
-    volume_result = await state_handler.handle_volume(value_to_int)
+    with metrics_handler.network_latency_seconds.time():
+        volume_result = await state_handler.handle_volume(value_to_int)
     if volume_result.get("success"):
         metrics_handler.volume_state.set(value_to_int)
         announcer.push_message("volume", value_to_int)
@@ -76,7 +79,8 @@ async def volume():
 @app.route("/api/source", methods=["POST"])
 async def source():
     value = request.args.get('value')
-    source_result = await state_handler.handle_source(value)
+    with metrics_handler.network_latency_seconds.time():
+        source_result = await state_handler.handle_source(value)
     if source_result.get("success"):
         announcer.push_message("source", value)
     return jsonify(source_result)

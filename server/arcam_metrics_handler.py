@@ -7,6 +7,9 @@ class ArcamMetricsHandler:
     self.health_check_latency_seconds = Histogram(
       'health_check_latency_seconds', 'Time spent processing health check'
     )
+    self.network_latency_seconds = Histogram(
+      'network_latency_seconds', 'Latency between REST API and Arcam amplifier'
+    )
     self.write_request_count = Counter(
       'write_request_count',
       'Number of write requests sent to the Arcam amplifier',
