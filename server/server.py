@@ -70,9 +70,9 @@ async def volume():
         raise ValueError("Volume out of range")
     with metrics_handler.network_latency_seconds.time():
         volume_result = await state_handler.handle_volume(value_to_int)
+    announcer.push_message("volume", value_to_int)
     if volume_result.get("success"):
         metrics_handler.volume_state.set(value_to_int)
-        announcer.push_message("volume", value_to_int)
     return jsonify(volume_result)
 
 
