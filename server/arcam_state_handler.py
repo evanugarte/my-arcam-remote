@@ -10,11 +10,12 @@ from arcam_fmj.src.arcam.fmj.state import State
 class ArcamStateHandler:
     # Amount of time to wait before sending debounced volume
     # requests to the amplifier. See handle_volume for more context.
-    DEBOUNCE_DELAY_SECONDS = 0.25
+    DEBOUNCE_DELAY_SECONDS = 0.5
 
     def __init__(self, ip, port, zone):
         self.client = Client(ip, port)
         self.zone = zone
+        self.volume_value = None
 
     def source_to_str(self, source):
         return {
@@ -93,35 +94,50 @@ class ArcamStateHandler:
             }
 
     async def actually_do_volume(self, value):
-        success = True
         async with ClientContext(self.client):
             state = State(self.client, self.zone)
             await state.set_volume(value)
             await self.client.stop()
 
-    async def handle_volume(self, value):
+    async def handle_volume(self, value_from_client):
         # debounce logic for adjusting Arcam volume
-        def call_it():
+        def call_it(volume=None):
+            print("call_it called with", self.volume_value, volume, flush=True)
             # conversion from a non async function to calling an async function
             # which is actually_do_volume
-            asyncio.run(self.actually_do_volume(value))
+            if volume:
+                value_to_write = volume
+            else:
+                value_to_write = self.volume_value
+            print("finally writing::::", value_to_write, flush=True)
+            if value_to_write:
+                asyncio.run(self.actually_do_volume(value_to_write))
+            self.t = None
         try:
             # when we receive a message, try replacing the timer
             # the first step is canceling the existing timer
-            self.t.cancel()
+            if self.t.is_alive:
+                self.volume_value = value_from_client
         except(AttributeError):
+            await self.actually_do_volume(value_from_client)
+            self.volume_value = None
             # we tried to cancel but a timer didn’t exist. Oh well, we
             # can still resume the normal program flow as the below section
             # creates a new timer for us no matter what
-            pass
+            self.t = threading.Timer(self.DEBOUNCE_DELAY_SECONDS, call_it)
+            # start the timer. Wait for any other takes to update
+            # volume state before actually updating the amplifier.
+            self.t.start()
         # create a new timer to call the true updater function with
         # the most recent value we got. the most recent value is
         # the parameter to the function
         # 0.25 works reliably
-        self.t = threading.Timer(self.DEBOUNCE_DELAY_SECONDS, call_it)
-        # start the timer. Wait for any other takes to update
-        # volume state before actually updating the amplifier.
-        self.t.start()
+
+        # laz:
+        # I’d consider an alternative: send the first request you get,
+        # then set a timer for 500ms or something and aggregate all changes
+        # for that window. if anything is set in the window, send the
+        # final value and set another timer.
         # lie to the user and say it was successful. mongodb is web scale.
         return {
             "success": True

@@ -26,9 +26,10 @@ services:
       - arcam-remote-local
 
   cadvisor:
-    image: braingamer/cadvisor-arm:latest
+    # for running on ARM:
+    # image: braingamer/cadvisor-arm:latest
     # for running on x86:
-    # image: gcr.io/cadvisor/cadvisor:latest
+    image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
     restart: always
     volumes:
@@ -47,7 +48,7 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
+    container_name: grafana-arcam-remote
     restart: unless-stopped
     volumes:
       - /etc/localtime:/etc/localtime:ro
