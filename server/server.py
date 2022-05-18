@@ -38,7 +38,10 @@ def home(path):
 @app.route("/api/health-check", methods=["GET"])
 async def health_check():
     with metrics_handler.health_check_latency_seconds.time():
-        return jsonify(await state_handler.health_check())
+        health_check_response = await state_handler.health_check()
+        if not health_check_response.get("success"):
+            metrics_handler.network_errors.inc()
+        return jsonify(health_check_response)
 
 
 @app.route("/api/mute", methods=["POST"])
@@ -49,6 +52,8 @@ async def mute():
     if mute_result.get("success"):
         metrics_handler.mute_state.set(int(value_to_bool))
         announcer.push_message("mute", value_to_bool)
+    else:
+        metrics_handler.network_errors.inc()
     return jsonify(mute_result)
 
 
@@ -60,6 +65,8 @@ async def power():
     if power_result.get("success"):
         metrics_handler.power_state.set(int(value_to_bool))
         announcer.push_message("power", value_to_bool)
+    else:
+        metrics_handler.network_errors.inc()
     return jsonify(power_result)
 
 
@@ -73,6 +80,8 @@ async def volume():
     announcer.push_message("volume", value_to_int)
     if volume_result.get("success"):
         metrics_handler.volume_state.set(value_to_int)
+    else:
+        metrics_handler.network_errors.inc()
     return jsonify(volume_result)
 
 
@@ -83,6 +92,8 @@ async def source():
         source_result = await state_handler.handle_source(value)
     if source_result.get("success"):
         announcer.push_message("source", value)
+    else:
+        metrics_handler.network_errors.inc()
     return jsonify(source_result)
 
 @app.route('/api/listen', methods=['GET'])
