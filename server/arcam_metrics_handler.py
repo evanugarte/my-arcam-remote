@@ -14,6 +14,10 @@ class ArcamMetricsHandler:
       'write_request_count',
       'Number of write requests sent to the Arcam amplifier',
     )
+    self.network_errors = Counter(
+      'network_errors',
+      'Number of unsuccessful requests sent to the Arcam amplifier',
+    )
     self.volume_state = Gauge(
       'volume_state',
       'Value of the Arcam amplifier\'s volume level',
