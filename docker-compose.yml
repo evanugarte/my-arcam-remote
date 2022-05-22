@@ -43,6 +43,8 @@ services:
     image: grafana/grafana:latest
     container_name: arcam_grafana
     restart: unless-stopped
+    environment:
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
