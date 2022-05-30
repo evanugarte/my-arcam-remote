@@ -1,0 +1,25 @@
+groups:
+  - name: alert_rules
+    interval: 1s
+    rules:
+      - alert: arcam_down
+        expr: round(rate(network_errors_total{job="arcam-remote-website"}[1m]) * 60) > 0
+        for: 1s
+        labels:
+          severity: critical
+        annotations:
+          summary: Commands sent to the Arcam device are failing.
+          description: "{{ $value }} commands in the last minute have errored."
+
+
+      - alert: container_not_running
+        expr: |
+          round(time() - container_last_seen{name="arcam-remote-website"}) > 10
+            or
+          round(time() - container_last_seen{name="arcam_nginx"}) > 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container '{{ $labels.image }}' not running"
+          description: "container '{{ $labels.image }}' down for more than {{ $value }} seconds"

@@ -15,12 +15,11 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/:/etc/prometheus/
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     depends_on:
       - cadvisor
-
   cadvisor:
     image: braingamer/cadvisor-arm:latest
     # for running on x86:
@@ -69,3 +68,4 @@ services:
 volumes:
   grafana:
   prometheus:
+  alertmanager-data:
