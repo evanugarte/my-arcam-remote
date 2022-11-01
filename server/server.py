@@ -5,8 +5,6 @@ from flask import request
 from flask import Response
 from flask import jsonify
 from flask import send_from_directory
-from prometheus_client import start_http_server
-from prometheus_client import Histogram
 
 from arcam_state_handler import ArcamStateHandler
 from arcam_metrics_handler import ArcamMetricsHandler
@@ -18,6 +16,7 @@ app = Flask(__name__)
 HOST_IP = os.getenv('HOST_IP')
 HOST_PORT = os.getenv('HOST_PORT') or 50000
 ZONE = os.getenv('ZONE') or 1
+CONTENT_TYPE_LATEST = str('text/plain; version=0.0.4; charset=utf-8')
 
 announcer = MessageAnnouncer()
 
@@ -105,6 +104,9 @@ def listen():
             yield msg
     return Response(stream(), mimetype='text/event-stream')
 
+@app.route('/metrics')
+def metrics():
+    return Response(metrics_handler.generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+
 if __name__ == '__main__':
-    start_http_server(50052)
     app.run(host='0.0.0.0')

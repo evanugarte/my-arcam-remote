@@ -1,6 +1,7 @@
-from prometheus_client import Histogram
 from prometheus_client import Counter
 from prometheus_client import Gauge
+from prometheus_client import generate_latest
+from prometheus_client import Histogram
 
 class ArcamMetricsHandler:
   def initialize(self):
@@ -30,3 +31,7 @@ class ArcamMetricsHandler:
       'power_state',
       'Value of the Arcam power state, 0 for off and 1 for on',
     )
+
+
+  def generate_latest(self):
+    return generate_latest()
