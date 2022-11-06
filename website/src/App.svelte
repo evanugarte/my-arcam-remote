@@ -16,7 +16,10 @@
   ];
 
   async function healthCheck() {
-    const res = await fetch(`./api/health-check`);
+    const url = new URL(
+      `./api/health-check`, window.location.href
+    );
+    const res = await fetch(url.href);
     data = await res.json();
   }
 
@@ -25,13 +28,16 @@
   });
 
   async function sendRequestToArcam(endpoint, value) {
-    await fetch(`./api/${endpoint}?value=${value}`, {method: 'POST'});
+    const url = new URL(
+      `./api/${endpoint}?value=${value}`, window.location.href
+    );
+    await fetch(url.href, {method: 'POST'});
   }
 
   let tabInactive;
 
   window.onfocus = async function () { 
-    if (tabInactive) {``
+    if (tabInactive) {
       tabInactive = false;
       await healthCheck();
     }
