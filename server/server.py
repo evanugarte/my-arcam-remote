@@ -4,7 +4,6 @@ from flask import Flask
 from flask import request
 from flask import Response
 from flask import jsonify
-from flask import send_from_directory
 
 from arcam_state_handler import ArcamStateHandler
 from arcam_metrics_handler import ArcamMetricsHandler
@@ -23,15 +22,6 @@ announcer = MessageAnnouncer()
 state_handler = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
 metrics_handler = ArcamMetricsHandler()
 metrics_handler.initialize()
-
-@app.route("/", methods=["GET"])
-async def base():
-    return send_from_directory("website/public", "index.html")
-
-
-@app.route("/<path:path>")
-def home(path):
-    return send_from_directory("website/public", path)
 
 
 @app.route("/api/health-check", methods=["GET"])
