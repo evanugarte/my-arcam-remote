@@ -1,26 +1,20 @@
 version: '2'
 services:
-  arcam-remote-website:
-    container_name: arcam-remote-website
+  arcam_api:
+    container_name: arcam_api
     build:
-      context: .
+      context: ./server
       dockerfile: ./Dockerfile
     environment:
       - HOST_IP=192.168.1.4
     restart: 'on-failure'
-  nginx:
-    image: 'nginx'
+  arcam_nginx:
     container_name: arcam_nginx
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    command: [nginx-debug, '-g', 'daemon off;']
+    build:
+      context: ./website
+      dockerfile: ./Dockerfile
     ports:
       - '80:80'
     restart: 'on-failure'
     depends_on:
-      - arcam-remote-website
-
-volumes:
-  grafana:
-  prometheus:
-  alertmanager-data:
+      - arcam_api
