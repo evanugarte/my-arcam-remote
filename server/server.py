@@ -24,7 +24,7 @@ metrics_handler = ArcamMetricsHandler()
 metrics_handler.initialize()
 
 
-@app.route("/api/health-check", methods=["GET"])
+@app.route("/health-check", methods=["GET"])
 async def health_check():
     with metrics_handler.health_check_latency_seconds.time():
         health_check_response = await state_handler.health_check()
@@ -33,7 +33,7 @@ async def health_check():
         return jsonify(health_check_response)
 
 
-@app.route("/api/mute", methods=["POST"])
+@app.route("/mute", methods=["POST"])
 async def mute():
     value_to_bool = bool(int(request.args.get("value")))
     with metrics_handler.network_latency_seconds.time():
@@ -46,7 +46,7 @@ async def mute():
     return jsonify(mute_result)
 
 
-@app.route("/api/power", methods=["POST"])
+@app.route("/power", methods=["POST"])
 async def power():
     value_to_bool = bool(int(request.args.get("value")))
     with metrics_handler.network_latency_seconds.time():
@@ -59,7 +59,7 @@ async def power():
     return jsonify(power_result)
 
 
-@app.route("/api/volume", methods=["POST"])
+@app.route("/volume", methods=["POST"])
 async def volume():
     value_to_int = int(request.args.get("value"))
     if value_to_int < 0 or value_to_int > 99:
@@ -74,7 +74,7 @@ async def volume():
     return jsonify(volume_result)
 
 
-@app.route("/api/source", methods=["POST"])
+@app.route("/source", methods=["POST"])
 async def source():
     value = request.args.get('value')
     with metrics_handler.network_latency_seconds.time():
@@ -85,7 +85,7 @@ async def source():
         metrics_handler.network_errors.inc()
     return jsonify(source_result)
 
-@app.route('/api/listen', methods=['GET'])
+@app.route("/listen", methods=["GET"])
 def listen():
     def stream():
         messages = announcer.listen()
