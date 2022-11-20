@@ -34,57 +34,31 @@ async def health_check():
         return jsonify(health_check_response)
 
 
-@app.route("/mute", methods=["POST"])
-async def mute():
-    value_to_bool = bool(int(request.args.get("value")))
-    with metrics_handler.network_latency_seconds.time():
-        mute_result = await state_handler.set_metric(DeviceMetric.MUTE, value_to_bool)
-    if mute_result.get("success"):
-        metrics_handler.mute_state.set(int(value_to_bool))
-        announcer.push_message("mute", value_to_bool)
-    else:
-        metrics_handler.network_errors.inc()
-    return jsonify(mute_result)
-
-
-@app.route("/power", methods=["POST"])
-async def power():
-    value_to_bool = bool(int(request.args.get("value")))
-    with metrics_handler.network_latency_seconds.time():
-        power_result = await state_handler.set_metric(DeviceMetric.POWER, value_to_bool)
-    if power_result.get("success"):
-        metrics_handler.power_state.set(int(value_to_bool))
-        announcer.push_message("power", value_to_bool)
-    else:
-        metrics_handler.network_errors.inc()
-    return jsonify(power_result)
-
-
-@app.route("/volume", methods=["POST"])
-async def volume():
-    value_to_int = int(request.args.get("value"))
-    if value_to_int < 0 or value_to_int > 99:
-        raise ValueError("Volume out of range")
-    with metrics_handler.network_latency_seconds.time():
-        volume_result = await state_handler.set_metric(DeviceMetric.VOLUME, value_to_int)
-    announcer.push_message("volume", value_to_int)
-    if volume_result.get("success"):
-        metrics_handler.volume_state.set(value_to_int)
-    else:
-        metrics_handler.network_errors.inc()
-    return jsonify(volume_result)
-
-
-@app.route("/source", methods=["POST"])
-async def source():
-    value = request.args.get('value')
-    with metrics_handler.network_latency_seconds.time():
-        source_result = await state_handler.set_metric(DeviceMetric.SOURCE, value)
-    if source_result.get("success"):
-        announcer.push_message("source", value)
-    else:
-        metrics_handler.network_errors.inc()
-    return jsonify(source_result)
+@app.route("/set/<metric>", methods=["POST"])
+async def update_device(metric=""):
+    try:
+        # assuming metric is always a string type so upper()
+        # will not raise an AttributeError
+        metric_as_enum = DeviceMetric[metric.upper()]
+        cast_value =  metric_as_enum.cast_to_correct_type(request.args.get("value"))
+        if not metric_as_enum.is_valid(cast_value):
+            raise ValueError(f"{cast_value} is an invalid value for metric {metric}")
+        with metrics_handler.network_latency_seconds.time():
+            result = await state_handler.set_metric(metric_as_enum, cast_value)
+        if result.get("success"):
+            metrics_handler.maybe_update_gauge_with_enum(metric_as_enum, cast_value)
+            announcer.push_message(metric_as_enum.designation, cast_value)
+        else:
+            metrics_handler.network_errors.inc()
+        return jsonify(result)
+    except KeyError:
+        return Response(
+            f"\"{metric}\" is not a supported metric for updating Arcam state.",
+            status=400,
+            mimetype="text/plain",
+        )
+    except ValueError as e:
+        return Response(repr(e), status=400, content_type="text/plain")
 
 @app.route("/listen", methods=["GET"])
 def listen():

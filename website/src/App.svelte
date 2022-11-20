@@ -29,7 +29,7 @@
 
   async function sendRequestToArcam(endpoint, value) {
     const url = new URL(
-      `./api/${endpoint}?value=${value}`, window.location.href
+      `./api/set/${endpoint}?value=${value}`, window.location.href
     );
     await fetch(url.href, {method: 'POST'});
   }
