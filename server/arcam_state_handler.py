@@ -7,12 +7,14 @@ from arcam_fmj.src.arcam.fmj.client import Client
 from arcam_fmj.src.arcam.fmj.client import ClientContext
 from arcam_fmj.src.arcam.fmj.state import State
 
+from constants import DeviceMetric
+
 class ArcamStateHandler:
     # Amount of time to wait before sending debounced volume
-    # requests to the amplifier. See handle_volume for more context.
+    # requests to the amplifier. See set_volume for more context.
     DEBOUNCE_DELAY_SECONDS = 0.25
 
-    def __init__(self, ip, port, zone):
+    def __init__(self, ip, port, zone=1):
         self.client = Client(ip, port)
         self.zone = zone
 
@@ -40,6 +42,14 @@ class ArcamStateHandler:
             "BD": SA10SourceCodes.BD,
             "SAT": SA10SourceCodes.SAT
         }.get(source)
+    
+    def metric_to_function(self, metric):
+        return {
+            DeviceMetric.MUTE: self.set_mute,
+            DeviceMetric.POWER: self.set_power,
+            DeviceMetric.VOLUME: self.set_volume,
+            DeviceMetric.SOURCE: self.set_source,
+        }.get(metric)
 
     async def health_check(self):
         try:
@@ -64,7 +74,7 @@ class ArcamStateHandler:
                 "success": False,
             }
 
-    async def handle_mute(self, value):
+    async def set_mute(self, value):
         success = True
         try:
             async with ClientContext(self.client):
@@ -78,7 +88,7 @@ class ArcamStateHandler:
                 "success": success
             }
 
-    async def handle_power(self, value):
+    async def set_power(self, value):
         success = True
         try:
             async with ClientContext(self.client):
@@ -99,7 +109,7 @@ class ArcamStateHandler:
             await state.set_volume(value)
             await self.client.stop()
 
-    async def handle_volume(self, value):
+    async def set_volume(self, value):
         # debounce logic for adjusting Arcam volume
         def call_it():
             # conversion from a non async function to calling an async function
@@ -127,7 +137,7 @@ class ArcamStateHandler:
             "success": True
         }
 
-    async def handle_source(self, source_as_str):
+    async def set_source(self, source_as_str):
         success = True
         try:
             async with ClientContext(self.client):
@@ -143,3 +153,11 @@ class ArcamStateHandler:
             return {
                 "success": success
             }
+    
+    async def set_metric(self, metric, value):
+        function = self.metric_to_function(metric)
+        if function is None:
+            return {
+                "success": success
+            }
+        return await function(value)
