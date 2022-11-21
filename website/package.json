@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "sirv-cli": "^1.0.0",
-    "sv-bootstrap-modal": "^1.0.3",
     "webpack-dev-server": "^4.0.0"
   },
   "proxy": "http://localhost:8080"
