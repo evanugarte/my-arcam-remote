@@ -1,3 +1,4 @@
+import argparse
 import os
 
 from flask import Flask
@@ -13,14 +14,32 @@ from message_announcer import MessageAnnouncer
 
 app = Flask(__name__)
 
-HOST_IP = os.getenv('HOST_IP')
-HOST_PORT = os.getenv('HOST_PORT') or 50000
-ZONE = os.getenv('ZONE') or 1
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--device_ip",
+    required=True,
+    help="The IP address of the Arcam device"
+)
+parser.add_argument(
+    "--device_port",
+    type=int,
+    default=50000,
+    help="Network port of the Arcam device to send commands to, defaults to 50000."
+)
+parser.add_argument(
+    "--device_zone",
+    type=int,
+    default=1,
+    help="Zone of the Arcam device to send commands to, defaults to 1."
+)
+
+args = parser.parse_args()
+
 CONTENT_TYPE_LATEST = str('text/plain; version=0.0.4; charset=utf-8')
 
 announcer = MessageAnnouncer()
 
-state_handler = ArcamStateHandler(HOST_IP, HOST_PORT, ZONE)
+state_handler = ArcamStateHandler(args.device_ip, args.device_port, args.device_zone)
 metrics_handler = ArcamMetricsHandler()
 metrics_handler.initialize()
 

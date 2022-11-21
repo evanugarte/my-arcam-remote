@@ -24,4 +24,4 @@ COPY *.py ./
 
 EXPOSE 5000
 
-CMD ["python3", "server.py"]
+ENTRYPOINT ["python", "server.py"]
