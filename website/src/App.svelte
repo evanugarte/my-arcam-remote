@@ -54,7 +54,10 @@
 
   $: activeSource = data.source;
 
-  let eventSource = new EventSource("./api/listen");
+  const eventSourceUrl = new URL(
+    `./api/listen`, window.location.href
+  );
+  let eventSource = new EventSource(eventSourceUrl.href);
   eventSource.onopen = () => {};
   eventSource.onmessage = (msg) => {
     try {
