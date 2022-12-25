@@ -31,6 +31,13 @@
     event.stopPropagation();
     event.preventDefault();
   }
+
+  function handleKeyPress(event, clickCallback) {
+    const enterOrSpacePressed = event.keyCode === 13 || event.keyCode === 32;
+    if (enterOrSpacePressed) {
+      clickCallback();
+    }
+  }
  
   let tabInactive;
 
@@ -70,6 +77,10 @@
         <div
           class="top-button"
           on:click={() => sendRequestToArcam("power", ~~!data.power)}
+          on:keypress={
+            (event) =>
+              handleKeyPress(event, () => sendRequestToArcam("power", ~~!data.power))
+          }
         >
           <i
             class="fas fa-power-off active"
@@ -80,6 +91,10 @@
         <div
           id="source"
           on:click={() => (isOpen = true)}
+          on:keypress={
+            (event) =>
+              handleKeyPress(event, () => (isOpen = true))
+          }
           class="top-button"
         >
           <i class="fas fa-sign-in-alt" />
@@ -91,6 +106,10 @@
       <div
         class="mute padding-middle"
         on:click={() => sendRequestToArcam("mute", ~~!data.mute)}
+        on:keypress={
+          (event) =>
+            handleKeyPress(event, () => sendRequestToArcam("mute", ~~!data.mute))
+        }
       >
         <div class="grey-bg">
           <i
@@ -107,6 +126,10 @@
         <i
           class="fas fa-plus padding-1rem control-icon"
           on:click={() => sendRequestToArcam("volume", data.volume + 1)}
+          on:keypress={
+            (event) =>
+              handleKeyPress(event, () => sendRequestToArcam("volume", data.volume + 1))
+          }
         />
         <span class="label padding-1rem">
           Volume {typeof data.volume === 'number' ? data.volume : ''}
@@ -114,12 +137,32 @@
         <i
           class="fas fa-minus padding-1rem control-icon"
           on:click={() => sendRequestToArcam("volume", data.volume - 1)}
+          on:keypress={
+            (event) =>
+              handleKeyPress(event, () => sendRequestToArcam("volume", data.volume - 1))
+          }
         />
       </div>
     </div>
   </div>
-  <div class="modal" on:click={(event) => handleModalClick(event, true)} style="display: {isOpen ? 'block' : 'none'};">
-    <div class="modal-content" on:click={(event) => handleModalClick(event)} role="document">
+  <div
+    class="modal"
+    on:click={(event) => handleModalClick(event, true)}
+    on:keypress={
+      (event) =>
+        handleKeyPress(event, () => handleModalClick(event, true))
+    }
+    style="display: {isOpen ? 'block' : 'none'};"
+    >
+    <div
+      class="modal-content"
+      on:click={(event) => handleModalClick(event)}
+      on:keypress={
+        (event) =>
+          handleKeyPress(event, () => handleModalClick(event))
+      }
+      role="document"
+    >
           <div class="btn-group">
             {#each sources as source}
               <button
@@ -129,6 +172,10 @@
                   ? 'active'
                   : ''}"
                 on:click={() => sendRequestToArcam("source", source)}
+                on:keypress={
+                  (event) =>
+                    handleKeyPress(event, () => sendRequestToArcam("source", source))
+                }
               >
                 {source}
               </button>
