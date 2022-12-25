@@ -1,4 +1,5 @@
 Flask==2.0.1
+Flask-Cors==3.0.10
 asyncio==3.4.3
 attrs==21.2.0
 aiohttp==3.7.4.post0

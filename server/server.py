@@ -5,6 +5,7 @@ from flask import Flask
 from flask import request
 from flask import Response
 from flask import jsonify
+from flask_cors import CORS
 
 from arcam_state_handler import ArcamStateHandler
 from arcam_metrics_handler import ArcamMetricsHandler
@@ -13,6 +14,7 @@ from message_announcer import MessageAnnouncer
 
 
 app = Flask(__name__)
+CORS(app)
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
