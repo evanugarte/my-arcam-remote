@@ -32,9 +32,14 @@
     event.preventDefault();
   }
 
-  function handleKeyPress(event, clickCallback) {
-    const enterOrSpacePressed = event.keyCode === 13 || event.keyCode === 32;
-    if (enterOrSpacePressed) {
+  function handleKeyPress(event, clickCallback, desiredKey=null) {
+    let desiredKeyPressed = event.keyCode === desiredKey;
+    if (desiredKey === null) {
+      // if there is no specified desired key, we trigger the callback
+      // if the enter (13) or the space key (32) was pressed
+      desiredKeyPressed = event.keyCode === 13 || event.keyCode === 32;
+    }
+    if (desiredKeyPressed) {
       clickCallback();
     }
   }
@@ -51,6 +56,11 @@
   window.onblur = function () {
     tabInactive = true;
   };
+
+  window.addEventListener(
+    'keydown',
+    (event) => handleKeyPress(event, () => handleModalClick(event, true), 27),
+  )
 
   $: activeSource = data.source;
 
