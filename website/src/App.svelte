@@ -1,6 +1,13 @@
 <script>
   import { onMount } from "svelte";
 
+  import Minus from "./icons/Minus.svelte";
+  import Plus from "./icons/Plus.svelte";
+  import Power from "./icons/Power.svelte";
+  import SignIn from "./icons/SignIn.svelte";
+  import Speaker from "./icons/Speaker.svelte";
+  import SpeakerMute from "./icons/SpeakerMute.svelte";
+
   let data = {};
   let isOpen = false;
   let loading = false;
@@ -98,9 +105,8 @@
               handleKeyPress(event, () => sendRequestToArcam("power", ~~!data.power))
           }
         >
-          <i
-            class="fas fa-power-off active"
-            style="color: {data.power === false ? 'green' : 'red'};"
+          <Power
+            fill={data.power === false ? 'green' : 'red'}
           />
           <span class="label">Power</span>
         </div>
@@ -113,7 +119,7 @@
           }
           class="top-button"
         >
-          <i class="fas fa-sign-in-alt" />
+          <SignIn />
           <span class="label">Source</span>
         </div>
       </div>
@@ -128,36 +134,40 @@
         }
       >
         <div class="grey-bg">
-          <i
-            class="fas {data.mute
-              ? 'fa-volume-up'
-              : 'fa-volume-mute'} p-3 control-icon "
-          />
+          {#if data.mute}
+            <Speaker />
+          {:else}
+            <SpeakerMute />
+          {/if}
         </div>
         <span class="label">{data.mute ? "Unmute" : "Mute"}</span>
       </div>
       <div
         class="volume padding-1rem grey-bg rounded-bg"
       >
-        <i
-          class="fas fa-plus padding-1rem control-icon"
+        <div
+          class="volume-wrapper"
           on:click={() => sendRequestToArcam("volume", data.volume + 1)}
           on:keypress={
             (event) =>
-              handleKeyPress(event, () => sendRequestToArcam("volume", data.volume + 1))
+            handleKeyPress(event, () => sendRequestToArcam("volume", data.volume + 1))
           }
-        />
+        >
+          <Plus />
+        </div>
         <span class="label padding-1rem">
           Volume {typeof data.volume === 'number' ? data.volume : ''}
         </span>
-        <i
-          class="fas fa-minus padding-1rem control-icon"
+        <div
+          class="volume-wrapper"
           on:click={() => sendRequestToArcam("volume", data.volume - 1)}
           on:keypress={
             (event) =>
               handleKeyPress(event, () => sendRequestToArcam("volume", data.volume - 1))
           }
-        />
+        >
+          <Minus/>
+        </div>
       </div>
     </div>
   </div>
@@ -200,7 +210,3 @@
     </div>
   </div>
 </main>
-
-<style>
-  @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css");
-</style>

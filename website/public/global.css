@@ -198,3 +198,24 @@ i.control-icon {
 .btn-group>.active {
   background-color: #020029;
 }
+
+#arcam-controller > svg {
+  width: 24px;
+  height: 24px;
+}
+
+.volume-wrapper {
+  /*
+    the below disables double click text highlighting,
+    see https://stackoverflow.com/a/7018415
+  */
+  -webkit-user-select: none; /* Chrome/Safari */ 
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+ */
+  -o-user-select: none;
+  user-select: none;
+}
+
+.volume-wrapper:active {
+  box-shadow: -0.5px -0.5px 0.5px 0.5px #000;
+}
