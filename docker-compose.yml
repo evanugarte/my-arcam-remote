@@ -6,7 +6,7 @@ services:
       context: ./server
       dockerfile: ./Dockerfile
     command:
-      - --device_ip=$DEVICE_IP
+      - --arcam_ip=$ARCAM_IP
     restart: 'on-failure'
   arcam_nginx:
     container_name: arcam_nginx
