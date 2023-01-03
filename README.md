@@ -10,11 +10,11 @@ A remote for Arcam products using Svelte, Python and the
  [this document](https://www.arcam.co.uk/ugc/tor/SA10/User%20Manual/DISPLAY_SH295_EN-FR-DE-NL-ES-RU-IT-CN_Issue4_300120.pdf)
  on page 16 on the rightmost section.
 
-### Step 2: Create `.env` file with DEVICE_IP entry
+### Step 2: Create `.env` file with ARCAM_IP entry
 create a `.env` file in the project directory with the contents below. Ensure
  the ip address matches the value you got from step 1.
 ```
-DEVICE_IP=192.168.1.1
+ARCAM_IP=192.168.1.1
 ```
 
 ### Step 3: Run the application with docker-compose

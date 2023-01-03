@@ -18,18 +18,18 @@ CORS(app)
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--device_ip",
+    "--arcam_ip",
     required=True,
     help="The IP address of the Arcam device"
 )
 parser.add_argument(
-    "--device_port",
+    "--arcam_port",
     type=int,
     default=50000,
     help="Network port of the Arcam device to send commands to, defaults to 50000."
 )
 parser.add_argument(
-    "--device_zone",
+    "--arcam_zone",
     type=int,
     default=1,
     help="Zone of the Arcam device to send commands to, defaults to 1."
@@ -41,7 +41,7 @@ CONTENT_TYPE_LATEST = str('text/plain; version=0.0.4; charset=utf-8')
 
 announcer = MessageAnnouncer()
 
-state_handler = ArcamStateHandler(args.device_ip, args.device_port, args.device_zone)
+state_handler = ArcamStateHandler(args.arcam_ip, args.arcam_port, args.arcam_zone)
 metrics_handler = ArcamMetricsHandler()
 metrics_handler.initialize()
 
