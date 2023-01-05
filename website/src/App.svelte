@@ -3,14 +3,17 @@
 
   let data = {};
   let isOpen = false;
+  let loading = false;
   let sources = ["PHONO", "AUX", "PVR", "AV", "STB", "CD", "BD", "SAT"];
 
   async function healthCheck() {
+    loading = true;
     const url = new URL(
       `./api/health-check`, window.location.href
     );
     const res = await fetch(url.href);
     data = await res.json();
+    loading = false;
   }
 
   onMount(async () => {
@@ -80,7 +83,7 @@
   };
 </script>
 
-<main id="arcam-controller">
+<main id="arcam-controller" class={loading ? "disabled" : ""}>
   <div class="container-yay">
     <div class="title">
       <span>Arcam Remote Control</span>
