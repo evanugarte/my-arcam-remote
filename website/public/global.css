@@ -10,6 +10,10 @@ body {
   font-family: sans-serif;
 }
 
+.disabled {
+  pointer-events: none;
+}
+
 .container-yay {
   background: #e5e5e5;
   border-radius: 30px;
