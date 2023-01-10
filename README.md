@@ -25,5 +25,5 @@ ARCAM_IP=192.168.1.1
 ## Example Screenshot
 The website has a simple UI for both the browser and the phone:
 
-![Website](https://user-images.githubusercontent.com/36345325/130171453-d0aabb35-3e3e-46e3-9567-1ee3f0329c10.png)
+![Website](https://user-images.githubusercontent.com/36345325/211490821-420309f2-6e0c-471b-ad82-45ca5830eacc.png)
 
