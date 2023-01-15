@@ -1,6 +1,5 @@
 import asyncio
 import threading
-import time
 
 from arcam_fmj.src.arcam.fmj import SA10SourceCodes
 from arcam_fmj.src.arcam.fmj.client import Client
@@ -8,6 +7,7 @@ from arcam_fmj.src.arcam.fmj.client import ClientContext
 from arcam_fmj.src.arcam.fmj.state import State
 
 from constants import DeviceMetric
+from logger import logger
 
 class ArcamStateHandler:
     # Amount of time to wait before sending debounced volume
@@ -70,6 +70,7 @@ class ArcamStateHandler:
                     "source": source
                 }
         except Exception:
+            logger.exception("error getting device state for health check")
             return {
                 "success": False,
             }
@@ -83,6 +84,7 @@ class ArcamStateHandler:
                 await self.client.stop()
         except Exception:
             success = False
+            logger.exception("error setting mute state")
         finally:
             return {
                 "success": success
@@ -96,6 +98,7 @@ class ArcamStateHandler:
                 await state.set_power(value, use_rc5=False)
                 await self.client.stop()
         except Exception:
+            logger.exception("error setting power state")
             success = False
         finally:
             return {
@@ -104,10 +107,13 @@ class ArcamStateHandler:
 
     async def actually_do_volume(self, value):
         success = True
-        async with ClientContext(self.client):
-            state = State(self.client, self.zone)
-            await state.set_volume(value)
-            await self.client.stop()
+        try:
+            async with ClientContext(self.client):
+                state = State(self.client, self.zone)
+                await state.set_volume(value)
+                await self.client.stop()
+        except Exception:
+            logger.exception("error setting volume level")
 
     async def set_volume(self, value):
         # debounce logic for adjusting Arcam volume
@@ -149,6 +155,7 @@ class ArcamStateHandler:
                 await self.client.stop()
         except Exception:
             success = False
+            logger.exception("error setting source")
         finally:
             return {
                 "success": success
