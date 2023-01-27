@@ -3,3 +3,4 @@
 **/arcam_fmj/**
 **/build/**
 **/.vscode/**
+.env
