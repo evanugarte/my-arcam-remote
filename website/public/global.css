@@ -5,7 +5,7 @@ body {
   align-items: center;
   height: 100%;
   width: 100%;
-  background-color: #2e2e2e;
+  background-color: Gray;
   touch-action: manipulation;
   font-family: sans-serif;
 }
@@ -128,7 +128,7 @@ div.grey-bg {
 i.control-icon {
   font-size: 24px;
   padding: 1rem;
-  color: #2e2e2e;
+  color: Gray;
 }
 
 .padding-1rem {

@@ -1,6 +1,6 @@
 <svg
     viewBox="0 -6 16 16"
-    fill="#2e2e2e"
+    fill="Gray"
     id="meteor-icon-kit__solid-minus-s"
     xmlns="http://www.w3.org/2000/svg"
     height="24px"

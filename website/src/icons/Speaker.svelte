@@ -1,6 +1,6 @@
 <svg
     viewBox="0 0 24 24"
-    fill="#2e2e2e"
+    fill="Gray"
     height="30px"
     width="30px"
     xmlns="http://www.w3.org/2000/svg"

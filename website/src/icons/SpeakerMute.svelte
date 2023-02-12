@@ -3,7 +3,7 @@
     id="Flat"
     height="30px"
     width="30px"
-    fill="#2e2e2e"
+    fill="Gray"
     style="padding: 0.75rem;"
     xmlns="http://www.w3.org/2000/svg"
 >
