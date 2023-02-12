@@ -5,7 +5,7 @@ body {
   align-items: center;
   height: 100%;
   width: 100%;
-  background-color: Gray;
+  background-color: #2e2e2e;
   touch-action: manipulation;
   font-family: sans-serif;
 }
@@ -123,12 +123,6 @@ div.grey-bg {
 .top-button>i {
   font-size: 1.2em;
   margin-bottom: 5px;
-}
-
-i.control-icon {
-  font-size: 24px;
-  padding: 1rem;
-  color: Gray;
 }
 
 .padding-1rem {
