@@ -6,7 +6,7 @@
     xmlns="http://www.w3.org/2000/svg"
     style="padding: 0.75rem;"
 >
-    <g>
+    <g fill="#000000">
         <path
             fill="none"
             d="M0 0h24v24H0z"
