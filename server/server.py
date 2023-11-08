@@ -55,7 +55,7 @@ async def health_check():
     with metrics_handler.health_check_latency_seconds.time():
         now = time.time()
         # return cache if time is it was updated less than 1 hour ago
-        if cache.get("latest", 0) - now < HOUR_IN_SECONDS:
+        if now - cache.get("latest", 0) < HOUR_IN_SECONDS:
             return jsonify(cache)
         health_check_response = await state_handler.health_check()
         if not health_check_response.get("success"):
