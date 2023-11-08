@@ -1,4 +1,5 @@
 import argparse
+import time
 
 from flask import Flask
 from flask import request
@@ -37,7 +38,11 @@ parser.add_argument(
 args = parser.parse_args()
 
 CONTENT_TYPE_LATEST = str('text/plain; version=0.0.4; charset=utf-8')
+HOUR_IN_SECONDS = 3600
 
+cache = {
+    "latest": 0,
+}
 announcer = MessageAnnouncer()
 
 state_handler = ArcamStateHandler(args.arcam_ip, args.arcam_port, args.arcam_zone)
@@ -48,9 +53,15 @@ metrics_handler.initialize()
 @app.route("/health-check", methods=["GET"])
 async def health_check():
     with metrics_handler.health_check_latency_seconds.time():
+        now = time.time()
+        # return cache if time is it was updated less than 1 hour ago
+        if now - cache.get("latest", 0) < HOUR_IN_SECONDS:
+            return jsonify(cache)
         health_check_response = await state_handler.health_check()
         if not health_check_response.get("success"):
             metrics_handler.network_errors.inc()
+        cache.update(health_check_response)
+        cache["latest"] = now
         return jsonify(health_check_response)
 
 
@@ -68,6 +79,8 @@ async def update_device(metric=""):
         if result.get("success"):
             metrics_handler.maybe_update_gauge_with_enum(metric_as_enum, cast_value)
             announcer.push_message(metric_as_enum.designation, cast_value)
+            cache[metric.lower()] = cast_value
+            cache["latest"] = time.time()
         else:
             metrics_handler.network_errors.inc()
         return jsonify(result)
