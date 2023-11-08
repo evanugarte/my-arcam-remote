@@ -106,7 +106,6 @@ class ArcamStateHandler:
             }
 
     async def actually_do_volume(self, value):
-        success = True
         try:
             async with ClientContext(self.client):
                 state = State(self.client, self.zone, api_model=ApiModel.APISA_SERIES)
