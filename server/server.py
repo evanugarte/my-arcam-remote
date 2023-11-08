@@ -61,6 +61,7 @@ async def health_check():
         if not health_check_response.get("success"):
             metrics_handler.network_errors.inc()
         cache.update(health_check_response)
+        cache["latest"] = now
         return jsonify(health_check_response)
 
 
@@ -78,7 +79,7 @@ async def update_device(metric=""):
         if result.get("success"):
             metrics_handler.maybe_update_gauge_with_enum(metric_as_enum, cast_value)
             announcer.push_message(metric_as_enum.designation, cast_value)
-            cache[metric.lower] = cast_value
+            cache[metric.lower()] = cast_value
             cache["latest"] = time.time()
         else:
             metrics_handler.network_errors.inc()
